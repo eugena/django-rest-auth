@@ -4,7 +4,6 @@ if sys.version_info < (2, 7):
     from django.utils.importlib import import_module
 else:
     from importlib import import_module
-
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model
 
