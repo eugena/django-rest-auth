@@ -1,4 +1,4 @@
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, get_user_model
 from django.conf import settings
 
 from rest_framework import status
@@ -14,6 +14,9 @@ from .app_settings import (
     LoginSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer,
     PasswordChangeSerializer
 )
+
+from .utils import get_user_id_by_session_key, flush_session_by_session_key
+
 
 class SimpleLoginView(GenericAPIView):
 
@@ -97,13 +100,16 @@ class LogoutView(APIView):
     """
     permission_classes = (AllowAny,)
 
-    def post(self, request):
-        try:
-            request.user.auth_token.delete()
-        except:
-            pass
+    def post(self, request, **kwargs):
+        if getattr(settings, 'USING_SESSION_KEY', False):
+            flush_session_by_session_key(self.kwargs.get('session_key'))
+        else:
+            try:
+                request.user.auth_token.delete()
+            except:
+                pass
 
-        logout(request)
+            logout(request)
 
         return Response({"success": "Successfully logged out."},
                         status=status.HTTP_200_OK)
@@ -124,7 +130,15 @@ class UserDetailsView(RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
-        return self.request.user
+        if getattr(settings, 'USING_SESSION_KEY', False):
+            try:
+                user = get_user_model()._default_manager.get(
+                    pk=get_user_id_by_session_key(self.context.get('view').kwargs.get('session_key') or None))
+            except:
+                user = None
+        else:
+            user = self.request.user
+        return user
 
 
 class PasswordResetView(GenericAPIView):
@@ -189,7 +203,7 @@ class PasswordChangeView(GenericAPIView):
     serializer_class = PasswordChangeSerializer
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request):
+    def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
             return Response(

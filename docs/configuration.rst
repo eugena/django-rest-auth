@@ -45,3 +45,6 @@ Configuration
 
 
 - **SIMPLE_LOGIN** - is simplified is used
+
+
+- **USING_SESSION_KEY** - getting user by session_key, not from request object

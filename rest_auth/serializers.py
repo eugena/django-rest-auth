@@ -13,6 +13,8 @@ from rest_framework import serializers, exceptions
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 
+from .utils import get_user_id_by_session_key
+
 
 class SimpleLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -223,7 +225,15 @@ class PasswordChangeSerializer(serializers.Serializer):
             self.fields.pop('new_password2')
 
         self.request = self.context.get('request')
-        self.user = getattr(self.request, 'user', None)
+
+        if getattr(settings, 'USING_SESSION_KEY', False):
+            try:
+                self.user = get_user_model()._default_manager.get(
+                    pk=get_user_id_by_session_key(self.context.get('view').kwargs.get('session_key') or None))
+            except:
+                self.user = None
+        else:
+            self.user = getattr(self.request, 'user', None)
 
     def get_fields(self):
         if self.fields:
