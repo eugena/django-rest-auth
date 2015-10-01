@@ -236,12 +236,15 @@ class PasswordChangeSerializer(serializers.Serializer):
             self.user = getattr(self.request, 'user', None)
 
     def get_fields(self):
+        """
+        Returns fields
+        """
         if self.fields:
-            for field in self.fields:
-                self.fields[field].required = True
             fields = self.fields
         else:
             fields = super(PasswordChangeSerializer, self).get_fields()
+        for field in fields:
+            fields[field].required = True
         return fields
 
     def validate_old_password(self, value):
