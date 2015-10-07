@@ -110,8 +110,9 @@ class LogoutView(APIView):
                 pass
 
             logout(request)
-        response = Response({"success": "Successfully logged out."},
-                        status=status.HTTP_200_OK)
+        response = Response(
+            {"success": "Successfully logged out."},
+            status=status.HTTP_200_OK)
         response.delete_cookie(settings.SESSION_COOKIE_NAME)
         return response
 
