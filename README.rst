@@ -1,11 +1,11 @@
 Welcome to django-rest-auth
 ===========================
 
-.. image:: https://travis-ci.org/Tivix/django-rest-auth.png
+.. image:: https://travis-ci.org/eugena/django-rest-auth.png
     :target: https://travis-ci.org/eugena/django-rest-auth
 
 
-.. image:: https://coveralls.io/repos/Tivix/django-rest-auth/badge.png
+.. image:: https://coveralls.io/repos/eugena/django-rest-auth/badge.png
     :target: https://coveralls.io/r/eugena/django-rest-auth?branch=master
 
 
