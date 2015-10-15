@@ -46,7 +46,7 @@ class SimpleLoginView(GenericAPIView):
         if not self.serializer.is_valid():
             return self.get_error_response()
         self.login()
-        return Response({}, status=status.HTTP_200_OK)
+        return Response({'session_key': request.session.session_key}, status=status.HTTP_200_OK)
 
 
 class LoginView(GenericAPIView):
