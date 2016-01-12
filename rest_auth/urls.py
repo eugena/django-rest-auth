@@ -2,8 +2,8 @@ from django.conf.urls import patterns, url
 
 from django.conf import settings
 
-from rest_auth.views import (
-    LoginView, SimpleLoginView, LogoutView, UserDetailsView, PasswordChangeView,
+from .views import (
+    LoginView, SimpleLoginView, SimpleTokenLoginView, LogoutView, UserDetailsView, PasswordChangeView,
     PasswordResetView, PasswordResetConfirmView
 )
 
@@ -26,6 +26,7 @@ if getattr(settings, 'SIMPLE_LOGIN', False):
     urlpatterns += patterns(
         '',
         url(r'^login/$', SimpleLoginView.as_view(), name='rest_login'),
+        url(r'^login/token/$', SimpleTokenLoginView.as_view(), name='rest_login_by_token'),
     )
 else:
     urlpatterns += patterns(

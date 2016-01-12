@@ -1,3 +1,4 @@
+import hashlib
 from django.contrib.auth import get_user_model, authenticate
 from django.conf import settings
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
@@ -16,6 +17,27 @@ from rest_framework.exceptions import ValidationError
 from .utils import get_user_id_by_session_key
 
 
+class SimpleVerificationTokenGenerator(object):
+    """
+    Strategy object used to generate and check tokens for the email
+    verification mechanism.
+    """
+    @classmethod
+    def make_token(cls, value):
+        """
+        Returns a token that can be used once to do verification
+        for the given value.
+        """
+        return hashlib.sha1(settings.SECRET_KEY.encode() + value.encode()).hexdigest()
+
+    @classmethod
+    def check_token(cls, value, token):
+        """
+        Check that a token is correct for a given value.
+        """
+        return token == hashlib.sha1(settings.SECRET_KEY.encode() + value.encode()).hexdigest()
+
+
 class SimpleLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(style={'input_type': 'password'})
@@ -29,6 +51,43 @@ class SimpleLoginSerializer(serializers.Serializer):
 
         else:
             msg = _('Must include "username" and "password".')
+            raise exceptions.ValidationError(msg)
+
+        # Did we get back an active user?
+        if user:
+            if not user.is_active:
+                msg = _('User account is disabled.')
+                raise exceptions.ValidationError(msg)
+        else:
+            msg = _('Unable to log in with provided credentials.')
+            raise exceptions.ValidationError(msg)
+
+        attrs['user'] = user
+        return attrs
+
+
+class SimpleTokenLoginSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+
+    def validate(self, attrs):
+        uidb64 = attrs.get('uid')
+        token = attrs.get('token')
+
+        if uidb64 and token:
+            UserModel = get_user_model()
+            # Decode the uidb64 to uid to get User object
+            try:
+                uid = uid_decoder(uidb64)
+                usr = UserModel._default_manager.get(pk=uid)
+                if not SimpleVerificationTokenGenerator.check_token(usr.email, token):
+                    raise ValidationError({'token': ['Invalid token']})
+                user = usr
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+            except (TypeError, ValueError, OverflowError, UserModel.DoesNotExist):
+                raise ValidationError({'uid': ['Invalid uid']})
+        else:
+            msg = _('Must include "uidb64" and "token".')
             raise exceptions.ValidationError(msg)
 
         # Did we get back an active user?

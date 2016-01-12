@@ -1,10 +1,11 @@
 from django.conf import settings
 
-from rest_auth.serializers import (
+from .serializers import (
     TokenSerializer as DefaultTokenSerializer,
     UserDetailsSerializer as DefaultUserDetailsSerializer,
     LoginSerializer as DefaultLoginSerializer,
     SimpleLoginSerializer as DefaultSimpleLoginSerializer,
+    SimpleTokenLoginSerializer as DefaultTokenSimpleLoginSerializer,
     PasswordResetSerializer as DefaultPasswordResetSerializer,
     PasswordResetConfirmSerializer as DefaultPasswordResetConfirmSerializer,
     PasswordChangeSerializer as DefaultPasswordChangeSerializer)
@@ -26,6 +27,10 @@ LoginSerializer = import_callable(
 
 SimpleLoginSerializer = import_callable(
     serializers.get('SIMPLE_LOGIN_SERIALIZER', DefaultSimpleLoginSerializer)
+)
+
+SimpleTokenLoginSerializer = import_callable(
+    serializers.get('SIMPLE_TOKEN_LOGIN_SERIALIZER', DefaultTokenSimpleLoginSerializer)
 )
 
 PasswordResetSerializer = import_callable(

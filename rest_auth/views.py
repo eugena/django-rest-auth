@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import RetrieveUpdateAPIView
 
 from .app_settings import (
-    TokenSerializer, UserDetailsSerializer, SimpleLoginSerializer,
+    TokenSerializer, UserDetailsSerializer, SimpleLoginSerializer, SimpleTokenLoginSerializer,
     LoginSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer,
     PasswordChangeSerializer
 )
@@ -18,17 +18,9 @@ from .app_settings import (
 from .utils import get_user_id_by_session_key, flush_session_by_session_key
 
 
-class SimpleLoginView(GenericAPIView):
+class BaseSimpleLoginView(GenericAPIView):
 
-    """
-    Check the credentials and authenticated if the credentials are valid .
-    Calls Django Auth login method to register User ID
-    in Django session framework
-
-    Accept the following POST parameters: username, password
-    """
     permission_classes = (AllowAny,)
-    serializer_class = SimpleLoginSerializer
 
     def login(self):
         self.user = self.serializer.validated_data['user']
@@ -47,6 +39,30 @@ class SimpleLoginView(GenericAPIView):
             return self.get_error_response()
         self.login()
         return Response({'session_key': request.session.session_key}, status=status.HTTP_200_OK)
+
+
+class SimpleLoginView(BaseSimpleLoginView):
+
+    """
+    Check the credentials and authenticated if the credentials are valid.
+    Calls Django Auth login method to register User ID
+    in Django session framework
+
+    Accept the following POST parameters: username, password
+    """
+    serializer_class = SimpleLoginSerializer
+
+
+class SimpleTokenLoginView(BaseSimpleLoginView):
+
+    """
+    Check the credentials and authenticated if the credentials are valid.
+    Calls Django Auth login method to register User ID
+    in Django session framework
+
+    Accept the following POST parameters: uid, token
+    """
+    serializer_class = SimpleTokenLoginSerializer
 
 
 class LoginView(GenericAPIView):
