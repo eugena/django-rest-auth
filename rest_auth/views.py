@@ -219,7 +219,11 @@ class PasswordChangeView(GenericAPIView):
     """
 
     serializer_class = PasswordChangeSerializer
-    permission_classes = (IsAuthenticated,)
+
+    def __init__(self):
+        if not getattr(settings, 'USING_SESSION_KEY', False):
+            self.permission_classes = (IsAuthenticated,)
+        super(PasswordChangeView, self).__init__()
 
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
