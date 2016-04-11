@@ -59,7 +59,7 @@ class SimpleLoginSerializer(serializers.Serializer):
                 msg = _('User account is disabled.')
                 raise exceptions.ValidationError(msg)
         else:
-            msg = _('Unable to log in with provided credentials.')
+            msg = _("User with this pair of email and password wasn't found")
             raise exceptions.ValidationError(msg)
 
         attrs['user'] = user
